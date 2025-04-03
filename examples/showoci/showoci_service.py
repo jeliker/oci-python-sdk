@@ -587,15 +587,21 @@ class ShowOCIService(object):
         try:
             # create signer from config for authentication
             self.config = oci.config.from_file(config_file, config_section)
-            self.signer = oci.signer.Signer(
-                tenancy=self.config["tenancy"],
-                user=self.config["user"],
-                fingerprint=self.config["fingerprint"],
-                private_key_file_location=self.config.get("key_file"),
-                pass_phrase=oci.config.get_config_value_or_default(self.config, "pass_phrase"),
-                private_key_content=self.config.get("key_content")
-            )
 
+            if 'security_token_file' in self.config:
+                with open(self.config['security_token_file']) as f:
+                    token_content = f.read()
+                private_key = oci.signer.load_private_key_from_file(self.config['key_file'])
+                self.signer = oci.auth.signers.SecurityTokenSigner(token=token_content, private_key=private_key)
+            else:
+                self.signer = oci.signer.Signer(
+                    tenancy=self.config["tenancy"],
+                    user=self.config["user"],
+                    fingerprint=self.config["fingerprint"],
+                    private_key_file_location=self.config.get("key_file"),
+                    pass_phrase=oci.config.get_config_value_or_default(self.config, "pass_phrase"),
+                    private_key_content=self.config.get("key_content")
+                )
         except oci.exceptions.ProfileNotFound as e:
             print("*********************************************************************")
             print(f'* {str(e)}')
