@@ -1911,7 +1911,7 @@ class ShowOCIService(object):
             # if filter by path compartment, then reduce list and return new list
             if self.flags.filter_by_compartment_path:
                 for x in sorted_compartments:
-                    if self.flags.filter_by_compartment_path == x['path']:
+                    if x['path'].startswith(self.flags.filter_by_compartment_path):
                         filtered_compart.append(x)            # if filter by path compartment, then reduce list and return new list
 
             if self.flags.filter_by_compartment_recursive:
